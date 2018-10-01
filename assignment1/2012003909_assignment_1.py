@@ -87,9 +87,9 @@ class Maze:
         if start == goal:
             if self.map[start[0]][start[1]] == 2:
                 self.map[start[0]][start[1]] = 5
-            return (time, True)
+            return (time, True, 1)
         if step == 0:
-            return (time, False)
+            return (time, False, 0)
         prev = self.map[start[0]][start[1]]
         self.map[start[0]][start[1]] = 1
         order = getDirectionOrder(start,goal)
@@ -100,9 +100,9 @@ class Maze:
                 time += ret[0]
                 if ret[1]:
                     self.map[start[0]][start[1]] = 5 if prev == 2 else prev
-                    return (time, True)
+                    return (time, True, ret[2]+1)
         self.map[start[0]][start[1]] = prev
-        return (time, False)
+        return (time, False, 0)
     def ids_sub( self, start : tuple, goal : tuple):
         # start 부터 goal까지 IDS로 경로를 탐색한다
         length = 1
@@ -145,6 +145,12 @@ class Maze:
                     q.put(Maze.AStarNode(h(pos, goal, length+1), (mv, length+1, pos)))
             time = time + 1
         return (0,0)
+    def gbs(self) -> tuple:
+        # Greedy best first search
+        h = lambda a,b,c : abs(a[0]-b[0])+abs(a[1]-b[1])
+        r1 = self.astar_sub(self.start, self.key, h)
+        r2 = self.astar_sub(self.key, self.goal, h)
+        return (r1[0] + r2[0], r1[1]+r2[1])
     def astar(self) -> tuple:
         # heuristic function = 장애물이 하나도 없을 때의 최소거리
         h = lambda a,b,c : abs(a[0]-b[0])+abs(a[1]-b[1])+c
@@ -152,7 +158,10 @@ class Maze:
         r1 = self.astar_sub(self.start, self.key, h)
         r2 = self.astar_sub(self.key, self.goal, h)
         return (r1[0] + r2[0], r1[1]+r2[1])
-
+    def dfs(self) -> tuple:
+        r1 = self.dfs_sub(self.start,self.key, 100000)
+        r2 = self.dfs_sub(self.key,self.goal , 100000)
+        return (r1[0]+r2[0], r1[2]+r2[2])
     def bfs(self) -> tuple:
         # astar에서 h(n) = 0으로 선언하면 uniform cost search와 같다
         # uniform cost search에서 가중치가 모두 1인경우 BFS와 같다
@@ -184,37 +193,48 @@ def test(floor:str):
     print ( 'A*; time='+str(time)+' length=' + str(length) )
     time, length = mz.bfs()
     print ( 'BFS; time='+str(time)+' length=' + str(length) )
+    time, length = mz.gbs()
+    print ('Greedy; time='+str(time)+' length=' + str(length))
+    try:
+        time,length = mz.dfs()
+        print ( 'DFS; time=' + str(time) + ' length=' + str(length))
+    except RecursionError:
+        print('DFS; Recursion Overflow')
+        pass
     try:
         time, length = mz.ids()
         print ( 'IDS; time='+str(time)+' length=' + str(length) )
-    except RecursionError as e:
+    except RecursionError:
         print ( 'IDS; Recursion Overflow')
+        pass
     print('-------------')
 
 def first_floor():
-    execute('first', lambda mz : mz.astar())
-
+    execute('first', lambda mz : mz.gbs())
+    # 여기서 first는 층 ( 이를 이용해 input과 output파일을 가져옵니다 )
+    # 뒤의 lambda 함수는 사용할 알고리즘을 정의합니다. mz는 Maze 인스턴스 입니다.
 def second_floor():
-    execute('second', lambda mz : mz.astar())
+    execute('second', lambda mz : mz.gbs())
 
 def third_floor():
-    execute('third', lambda mz : mz.astar())
+    execute('third', lambda mz : mz.gbs())
 
 def fourth_floor():
-    execute('fourth', lambda mz : mz.astar())
+    execute('fourth', lambda mz : mz.gbs())
 
 def fifth_floor():
-    execute('fifth', lambda mz : mz.astar())
-    
+    execute('fifth', lambda mz : mz.gbs())
 
-#first_floor()
-#second_floor()
-#third_floor()
-#fourth_floor()
-#fifth_floor()
-
-test('fifth')
-test('fourth')
-test('third')
-test('second')
-test('first')
+mode = 'real'    
+if mode == 'real':
+    first_floor()
+    second_floor()
+    third_floor()
+    fourth_floor()
+    fifth_floor()
+else:
+    test('fifth')
+    test('fourth')
+    test('third')
+    test('second')
+    test('first')
