@@ -2,8 +2,7 @@ from queue import Queue,PriorityQueue
 import copy
 import sys
 import io
-from dataclasses import dataclass, field
-from typing import Callable , Any
+from typing import Callable
 class Direction:
     LEFT = (0, -1)
     RIGHT = (0,1 )
@@ -23,18 +22,11 @@ def getDirectionOrder(start : tuple,goal : tuple):
         return [x[0], y[0], x[1], y[1]]
     return [y[0], x[0], y[1],x[1]]
 class Maze:
-    start : tuple
-    key : tuple
-    map :list
-    height : int
-    width : int
-    @dataclass(order=True)
-    class AStarNode:
-        priority : int
-        item : Any=field(compare=False)
-        def __init__(self, priority : int, item):
-            self.priority = priority
-            self.item = item
+    start = (0,0)
+    key = (0,0)
+    map = []
+    height = 0
+    width = 0
     def copy (self):
         # 해당 인스턴스 복제
         mz = copy.deepcopy(self)
@@ -122,15 +114,16 @@ class Maze:
         # fc : priority 구하는 함수; Caller 정의
         mz = self.copy()
         q = PriorityQueue()
-        
+        cnt = 0
         time = 0
         path = self.createPathTrack()
         
-        q.put(Maze.AStarNode( 0, (start, 0 , start )))
+        q.put(( 0, cnt, (start, 0 , start )))
+        cnt = cnt + 1
         while not q.empty():
             node = q.get()
-            prior, item = node.priority, node.item
-            pos, length, previous = item
+            pos, length, previous = node[2]
+
             # PATH 추적을 위해 전 단계를 저장
             path[pos[0]][pos[1]] = previous
 
@@ -144,7 +137,8 @@ class Maze:
                 mv = mz.move(pos,dr)
                 if mv is not None:
                     # 함수인자로 전달받은 fc함수를 이용해 Priority Queue의 우선순위를 결정합니다
-                    q.put(Maze.AStarNode(fc(pos, goal, length+1), (mv, length+1, pos)))
+                    q.put((fc(pos, goal, length+1),cnt, (mv, length+1, pos)))
+                    cnt = cnt + 1
             time = time + 1
         return (0,0)
     def gbs(self) -> tuple:
