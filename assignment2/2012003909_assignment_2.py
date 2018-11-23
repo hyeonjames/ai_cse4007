@@ -141,6 +141,7 @@ def train(fileName, maxThread):
             Thread(target=do_concurrent_train, args=(qi, dicts[i]))
         )
         cur = cur + step
+    print('multi-thread training start')
     for t in threads:
         t.start()
     for t in threads:
@@ -208,7 +209,7 @@ def test(info, testFileName, outFileName, maxThread = 1):
         )
         cur = cur + step
     # 멀티쓰레드 처리
-    print('멀티 쓰레드 쿼리 시작')
+    print('multi thread query starting')
     for t in threads:
         t.start()
     for i in range(0,maxThread):
@@ -248,7 +249,7 @@ def match(file1,file2):
             else:
                 diff.append((id, r1[id][0], r1[id][1], r2[id][1]))
     percent = (correct/total)*100
-    print('총 ' + str(total) + '개중 ' + str(correct) + '개 일치 (' + str(percent) + '%)')
+    print('matched ' + str(correct) + '/' + str(total) + ' (' + str(percent) + '%)')
     return diff
 
 # 학습된 데이터 JSON으로 저장하기 위함
