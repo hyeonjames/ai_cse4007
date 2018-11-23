@@ -146,7 +146,8 @@ def train(fileName, maxThread):
         t.start()
     for t in threads:
         t.join()
-            
+    
+    # 병렬처리된 결과들을 하나로 합침
     dic = merge_dic(dicts)
     for w in dic.keys():
         # 0이 나온 경우 1로 설정
