@@ -283,7 +283,7 @@ def main():
         info = train('./ratings_train.txt', 4)
         saveJson('./trained.json', info)
 
-    test(info, './ratings_valid.txt', './ratings_result.txt', 4)
-    dif = match('./ratings_valid.txt', './ratings_result.txt')
+    test(info, './ratings_test.txt', './ratings_result.txt', 4)
+    #dif = match('./ratings_valid.txt', './ratings_result.txt')
 
 main()
